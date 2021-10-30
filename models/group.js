@@ -1,7 +1,7 @@
 const mongoose = require("mongoose"),
     Schema = mongoose.Schema
 
-const FroupSchema = new Schema(
+const GroupSchema = new Schema(
     { 
         name: String,
         participants: [Schema.Types.ObjectId],
