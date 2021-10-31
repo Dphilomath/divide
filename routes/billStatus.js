@@ -63,6 +63,7 @@ router.get("/", async (req, res) => {
                     else console.log(saved)
                 })
             }
+            res.status(200).json({"Success":"Update Successful"}).end()
             
         } catch (err) {
             console.log(err)
