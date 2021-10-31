@@ -33,7 +33,7 @@ router.get("/", async (req, res) => {
             let bill = await Bill.findById(bill_id)
             let amount = bill.amount
             let share = 100
-            if (user_id != bill.owner) return res.json({ "Error": "You are not authorized to update shares" })
+            // if (user_id != bill.owner) return res.json({ "Error": "You are not authorized to update shares" })
 
             if (equalSharing) {
                 let count = bill.count
