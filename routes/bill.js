@@ -8,10 +8,18 @@ const Bill = require(".././models/bill"),
 
 
 router.get('/', async(req, res)=>{
-    let billList = await Bill.find({})
+    let billList = await Bill.find({}).populate('users').exec()
     if(billList) return res.json(billList)
     else res.json("Error: No bills found")
 })
+
+
+router.get('/:user_id', async(req, res)=>{
+    let billList = await User.findById(req.params.user_id).populate('bills').exec()
+    if(billList) return res.json(billList)
+    else res.json("Error: No bills found")
+})
+
 
 router.get("/:name", async (req, res)=>{
     let billName = req.params.name
@@ -24,67 +32,170 @@ router.get("/:name", async (req, res)=>{
 })
 
 
-router.post('/add', async (req, res)=>{
+router.post('/addBill', async (req, res)=>{
+    let {bill_name, amount, due_date, category, user_id} = req.body
 
     try{
-        let existingBill = await Bill.findOne({name: req.body.name}).exec()
+        let existingBill = await Bill.findOne({bill_name: bill_name}).exec()
         if(existingBill!=null){
             return res.json({"Error": "Bill with the same name already exists"}).end();
         }
 
-        let newBill = new Bill({ ...req.body, date: new Date(req.body.date), due_date: new Date(req.body.due_date) });
+        let newBill = new Bill({ 
+            _id: new mongoose.Types.ObjectId(),
+            bill_name: bill_name,
+            amount: amount,
+            category: category,
+            due_date: new Date(due_date) 
+        });
+        console.log("data")
+        newBill.users.push(user_id)
         newBill.save(function (err, data) {
             if(err) console.log(err)
-            else res.json(data)
+            else{
+                 res.json(data)
+                 console.log(data)
+            }
         })  
         //initialise billStatus as well
-        let newBillStatus = new BillStatus({ bill_id: newBill._id, amount: req.body.amount});
+        let newBillStatus = new BillStatus({ bill_id: newBill._id, amount: amount});
+        newBillStatus.description.push({user_id, share: 0, active: true})
         newBillStatus.save(function (err, data) {
             if(err) console.log(err)
             else console.log(data)
         })  
 
     }catch(error){
+        console.log(error);
         return res.json(error)
     }   
 })
 
+// // expecting {friend_id, name, phone}
+// router.post('/:bill_name/addUser', async (req, res)=>{
 
-router.post('/:bill_name/addUser', async (req, res)=>{
-
-    let bill_name =  req.params.bill_name;
-    var bill = await Bill.findOne({name: bill_name}).exec()
+//     let bill_name =  req.params.bill_name;
+//     var bill = await Bill.findOne({name: bill_name}).exec()
     
-    const { id, name, phone } = req.body;
+//     const { friend_id, name, phone } = req.body;
 
+//     try{ 
+//         // User.findById(id, (err, found)=>{
+//         //     if(err) console.log(err)
+//         //     else if(found) {
+//         //         bill.users.push(id)
+//         //     }
+//         //     else return res.json({"Error" : "user_id invalid"})
+//         //     bill.save((err, data)=> {
+//         //         if(err) {
+//         //             console.log(err)
+//         //             res.status(500).json({"Error": "Request failed"})
+//         //         }
+//         //         else{
+//         //             console.log(data)
+//         //             return res.json(data)
+//         //         }
+//         //     });
+//         // }) 
+
+//         bill.users.push(friend_id)
+//         bill.save((err, data)=> {
+//             if(err) {
+//                 console.log(err)
+//                 res.status(500).json({"Error": "Request failed"})
+//             }
+//             else{
+//                 console.log(data)
+//                 return res.json(data)
+//             }
+//         });
+//         let billStatus = await BillStatus.find({bill_id: bill._id})
+//         let newBillStatus = {user_id : friend_id, share: 0, active: true }
+//         billStatus.billStatus.push(newBillStatus)
+//         billStatus.save((err, saved)=>{
+//             if(err) console.log(err)
+//             else console.log(saved)
+//         })
+
+
+//     }catch(error){
+//         return res.json(error)
+//     }
+    
+// })
+
+// expecting {friend_id, bill_id}
+router.post('/:bill_id/addUser', async (req, res)=>{
+
+    const { friend_id } = req.body;
+    const bill_id = req.params.bill_id
+    
+    var bill = await Bill.findById(bill_id).exec()
+    
+    
     try{ 
-        User.findById(id, (err, found)=>{
+        // User.findById(id, (err, found)=>{
+        //     if(err) console.log(err)
+        //     else if(found) {
+        //         bill.users.push(id)
+        //     }
+        //     else return res.json({"Error" : "user_id invalid"})
+        //     bill.save((err, data)=> {
+        //         if(err) {
+        //             console.log(err)
+        //             res.status(500).json({"Error": "Request failed"})
+        //         }
+        //         else{
+        //             console.log(data)
+        //             return res.json(data)
+        //         }
+        //     });
+        // }) 
+        if(bill.users.indexOf(friend_id)>-1) return res.json({"Error":"Already added"})
+
+
+        bill.users.push(friend_id)
+        let saved = await bill.save()
+        // bill.save((err, data)=> {
+        //     if(err) {
+        //         console.log(err)
+        //         res.status(500).json({"Error": "Request failed"})
+        //     }
+        //     else{
+        //         console.log(data)
+        //         res.json(data)
+        //     }
+        // });
+        User.findById(friend_id, (err, found)=>{
             if(err) console.log(err)
-            else if(found) {
-                bill.users.push(id)
+            else{
+                found.bills.push(bill_id)
+                found.save(err, saved=>{
+                    if(err) console.log(err)
+                    else console.log(saved)
+                })
             }
-            else return res.json({"Error" : "user_id invalid"})
-            bill.save((err, data)=> {
-                if(err) {
-                    console.log(err)
-                    res.status(500).json({"Error": "Request failed"})
-                }
-                else{
-                    console.log(data)
-                    return res.json(data)
-                }
-            });
-        })   
+        })
+        res.json(saved)
+        let billStatus = await BillStatus.findOne({bill_id: bill_id})
+        console.log(billStatus)
+        let newBillStatus = {user_id : friend_id, share: 0, active: true }
+        billStatus.description.push(newBillStatus)
+        billStatus.save((err, saved)=>{
+            if(err) console.log(err)
+            else console.log(saved)
+        })
+
 
     }catch(error){
-        return res.json(error)
+        console.log(error)
+        return res.status(420).json(error)
     }
     
 })
-
-router.get("/splitBill",async(req, res)=>{
+router.get("/splitBill", async(req, res)=>{
     //expecting { bill_id, equal: true/false, shares: { id1: share%1, id2: share%2....} }
-    let bill = await BillStatus.findById(req.body.bill_id)
+    let bill = await BillStatus.find({bill_id: req.body.bill_id})
     if(req.body.equal){
         for(id in req.body.shares){
             Bill.updateOne({_id: id}, {})

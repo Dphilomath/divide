@@ -6,18 +6,7 @@ const mongoose = require("mongoose"),
 const BillStatusSchema = new Schema({
     bill_id: {type: Schema.Types.ObjectId, ref: 'Bill'},
     amount: Number,
-    billStatus:[{ user_id : Schema.Types.ObjectId, share: Number, active: Boolean }],
-        // {   
-        //     share: {
-        //         type: Number,
-        //         default: 0
-        //     },
-        //     active: {
-        //         type: Boolean,
-        //         default: true
-        //     }
-        // }
-    // ),
+    description: [{   user_id:  { type : Schema.Types.ObjectId, ref:'User' },  share: Number, active: Boolean }],
     equalSharing: Boolean 
 })
 

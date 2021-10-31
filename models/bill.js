@@ -3,13 +3,19 @@ const mongoose = require("mongoose"),
         User = require("./user")
 
 const BillSchema = new Schema({
-    name: String,
+    bill_name: String,
     amount: Number,
-    date: Date,
+    date: {
+        type: Date,
+        default: new Date()
+    },
     due_date: Date,
     category: String,
-    users: [{ type: Schema.Types.ObjectId, ref: 'User' }],
-    equalSharing: Boolean 
+    users: [{ type: Schema.Types.ObjectId, ref: 'User', unique: true }],
+    equalSharing: {
+        type: Boolean,
+        default: true
+    }
 })
 
 const Bill = new mongoose.model("Bill", BillSchema)
