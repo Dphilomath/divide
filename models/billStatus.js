@@ -4,10 +4,10 @@ const mongoose = require("mongoose"),
         Bill = require('./bill')
 
 const BillStatusSchema = new Schema({
-    bill_id: {type: Schema.Types.ObjectId, ref: 'Bill'},
-    amount: Number,
-    description: [{   user_id:  { type : Schema.Types.ObjectId, ref:'User' },  share: Number, active: Boolean }],
-    equalSharing: Boolean 
+    bill_id: { type: Schema.Types.ObjectId, ref: 'Bill'},
+    share: Number,
+    active: Boolean,
+    user_id:  { type : Schema.Types.ObjectId, ref:'User' }
 })
 
 const BillStatus = new mongoose.model("BillStatus", BillStatusSchema)

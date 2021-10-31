@@ -9,6 +9,7 @@ router.post("/addFriend/:user_id", async(req, res)=>{
     const {phone} = req.body
     const self = await User.findById(req.params.user_id) 
     let friend = await User.findOne({phone: phone})
+
     try{
         if(friend){
             for(id of self.friends) {
@@ -39,7 +40,9 @@ router.get('/details/:user_id', async (req, res)=>{
 
     let self = await User.findById(req.params.user_id)
     if(self){
-        let friendList = await User.findById(req.params.user_id).populate('friends').populate('bills').exec()
+        let friendList = await User.findById(req.params.user_id)
+        .populate('bills').populate('friends').exec()
+        console.log(friendList)
         return res.json(friendList)
     } 
     else res.json({"Error": "User not found"})

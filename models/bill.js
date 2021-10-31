@@ -4,6 +4,7 @@ const mongoose = require("mongoose"),
 
 const BillSchema = new Schema({
     bill_name: String,
+    owner: { type: Schema.Types.ObjectId, ref: 'User' },
     amount: Number,
     date: {
         type: Date,
@@ -11,11 +12,12 @@ const BillSchema = new Schema({
     },
     due_date: Date,
     category: String,
-    users: [{ type: Schema.Types.ObjectId, ref: 'User', unique: true }],
+    users: [{ type: Schema.Types.ObjectId, ref: 'User' }],
     equalSharing: {
         type: Boolean,
         default: true
-    }
+    },
+    count: {type: Number, default: 0}
 })
 
 const Bill = new mongoose.model("Bill", BillSchema)
