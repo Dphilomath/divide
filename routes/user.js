@@ -49,6 +49,14 @@ router.get('/details/:user_id', async (req, res)=>{
     
 })
 
+//expects user_id
+router.get('/details/ph/:ph', async (req, res)=>{
+
+    let self = await User.findOne({phone : req.body.phone})
+    if(self) return res.json(self)
+    else res.json({"Error": "User not found"})
+    
+})
 
 //new user logs in, if record exists, sends it back, if not, creates it
 router.post("/newUser", async(req, res)=>{
